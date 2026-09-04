@@ -112,10 +112,6 @@
             white-space: nowrap;
         }
 
-        .btn-add-week:hover {
-            background-color: #1d4ed8;
-        }
-
         .summary-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -130,7 +126,7 @@
                 align-items: center;
             }
             .summary-grid {
-                grid-template-columns: repeat(5, 1fr);
+                grid-template-columns: repeat(4, 1fr);
             }
             .container {
                 padding: 24px;
@@ -163,9 +159,6 @@
             font-weight: 800;
             color: #1e293b;
             margin: 20px 0 10px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
         }
 
         .table-container {
@@ -181,7 +174,7 @@
             border-collapse: collapse;
             font-size: 13px;
             background: white;
-            min-width: 600px;
+            min-width: 680px;
         }
 
         th {
@@ -194,7 +187,7 @@
         }
 
         td {
-            padding: 10px 8px;
+            padding: 8px;
             border-bottom: 1px solid #f1f5f9;
             vertical-align: middle;
         }
@@ -203,34 +196,20 @@
             background-color: #fafafa;
         }
 
-        .status-select {
-            padding: 6px 4px;
+        .input-nominal {
+            width: 110px;
+            padding: 6px 8px;
             border-radius: 6px;
-            font-weight: 700;
-            font-size: 12px;
             border: 1px solid #cbd5e1;
-            cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+            text-align: right;
             outline: none;
-            width: 130px;
-            text-align: center;
         }
 
-        .status-belum-absen {
-            background-color: #f1f5f9;
-            color: #475569;
-            border-color: #cbd5e1;
-        }
-
-        .status-sudah-bayar {
-            background-color: #dcfce7;
-            color: #15803d;
-            border-color: #86efac;
-        }
-
-        .status-belum-bayar {
-            background-color: #fee2e2;
-            color: #b91c1c;
-            border-color: #fca5a5;
+        .input-nominal:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
         }
 
         .badge-status {
@@ -241,15 +220,10 @@
             font-weight: 700;
         }
 
-        .badge-belum-bayar {
-            background-color: #fee2e2;
-            color: #b91c1c;
-        }
-
-        .badge-belum-absen {
-            background-color: #fef3c7;
-            color: #b45309;
-        }
+        .badge-lunas { background-color: #dcfce7; color: #15803d; }
+        .badge-kurang { background-color: #fee2e2; color: #b91c1c; }
+        .badge-lebih { background-color: #e0e7ff; color: #3730a3; }
+        .badge-kosong { background-color: #f1f5f9; color: #64748b; }
 
         .alert-success-box {
             background-color: #dcfce7;
@@ -275,6 +249,7 @@
 
         .text-right { text-align: right; }
         .text-center { text-align: center; }
+        .text-lebih-info { color: #4338ca; font-weight: 700; font-size: 11px; margin-left: 2px; }
     </style>
 </head>
 <body>
@@ -282,73 +257,62 @@
 <div class="container">
     <header>
         <h1>UANG KAS X.5</h1>
-        <div class="subtitle">Tarif Uang Kas: Rp 3.000 / minggu</div>
+        <div class="subtitle">Tarif Standar Uang Kas: Rp 3.000 / minggu</div>
         <div class="bendahara-tag">Bendahara: Chika & Nazwa</div>
     </header>
 
     <div class="controls">
         <div class="week-nav">
             <span style="font-weight:600; color:#475569; font-size:13px;">Periode:</span>
-            <select id="weekSelect" class="select-week" onchange="switchWeek(this.value)">
-                <!-- Generated dynamically -->
-            </select>
+            <select id="weekSelect" class="select-week" onchange="switchWeek(this.value)"></select>
         </div>
-        <button class="btn-add-week" onclick="tambahMingguBaru()">
-            ➕ Tambah / Lanjut Minggu Baru
-        </button>
+        <button class="btn-add-week" onclick="tambahMingguBaru()">➕ Lanjut Minggu Baru</button>
     </div>
 
     <div class="summary-grid">
         <div class="card">
-            <div class="card-title">Sudah Bayar</div>
-            <div class="card-value" id="countSudah" style="color: var(--success)">0</div>
+            <div class="card-title">Sudah Bayar / Lunas</div>
+            <div class="card-value" id="countLunas" style="color: var(--success)">0</div>
         </div>
         <div class="card">
-            <div class="card-title">Belum Bayar</div>
-            <div class="card-value" id="countBelum" style="color: var(--danger)">0</div>
-        </div>
-        <div class="card">
-            <div class="card-title">Belum Absen</div>
-            <div class="card-value" id="countAbsen" style="color: var(--warning)">0</div>
+            <div class="card-title">Belum Lunas / Kurang</div>
+            <div class="card-value" id="countKurang" style="color: var(--danger)">0</div>
         </div>
         <div class="card">
             <div class="card-title">Kas Minggu Ini</div>
             <div class="card-value" id="totalMingguIni" style="color: var(--primary-dark)">Rp 0</div>
         </div>
-        <div class="card" style="grid-column: span 2; @media(min-width:600px){grid-column: span 1;}">
-            <div class="card-title">Total Akumulasi Seluruh Minggu</div>
+        <div class="card">
+            <div class="card-title">Total Akumulasi Kas</div>
             <div class="card-value" id="totalAkumulasi" style="color: #047857">Rp 0</div>
         </div>
     </div>
 
-    <!-- TABEL 1: DAFTAR UNGKAP / TUNGGAKAN MINGGU INI -->
+    <!-- TABEL 1: DAFTAR BELUM LUNAS MINGGU INI -->
     <div class="section-title">
-        <span>📋 Rekap Tunggakan <span id="labelMingguTunggakan">Minggu ini</span></span>
+        📋 Rekap Tunggakan <span id="labelMingguTunggakan">Minggu ini</span>
     </div>
-    <div id="tunggakanContainer">
-        <!-- Generates table or success banner dynamically -->
-    </div>
+    <div id="tunggakanContainer"></div>
 
-    <!-- TABEL 2: DATA LENGKAP UTAMA -->
-    <div class="section-title">
-        <span>📊 Data Seluruh Siswa</span>
-    </div>
+    <!-- TABEL 2: DATA INPUT LENGKAP -->
+    <div class="section-title">📊 Input Absen & Pembayaran Siswa</div>
     <div class="table-container">
         <table>
             <thead>
                 <tr>
                     <th class="text-center" style="width: 40px;">No</th>
                     <th style="min-width: 160px;">Nama Siswa</th>
-                    <th class="text-center" style="width: 140px;">Status Pembayaran</th>
-                    <th class="text-right" style="width: 120px;">Bayar Minggu Ini</th>
-                    <th class="text-right" style="width: 140px;">Total Terbayar (Siswa)</th>
+                    <th class="text-center" style="width: 140px;">Bayar Minggu Ini (Rp)</th>
+                    <th class="text-center" style="width: 150px;">Status</th>
+                    <th class="text-right" style="width: 170px;">Total Terbayar (Siswa)</th>
                 </tr>
             </thead>
             <tbody id="studentTable"></tbody>
             <tfoot>
                 <tr class="total-row">
-                    <td colspan="3" class="text-right">TOTAL KAS:</td>
-                    <td class="text-right" id="footerTotalMinggu" style="color: var(--primary-dark);">Rp 0</td>
+                    <td colspan="2" class="text-right">TOTAL KAS:</td>
+                    <td class="text-center" id="footerTotalMinggu" style="color: var(--primary-dark);">Rp 0</td>
+                    <td></td>
                     <td class="text-right" id="footerTotalAkumulasi" style="color: #047857;">Rp 0</td>
                 </tr>
             </tfoot>
@@ -371,16 +335,16 @@
         "ZANETTA DWI FAUZIYAH", "ZHIAN ARYAN PRAMANA"
     ];
 
-    const TARIF_KAS = 3000;
+    const TARIF_STANDAR = 3000;
 
-    let paymentHistory = JSON.parse(localStorage.getItem('kas_x5_history_v3')) || { 1: {} };
-    let totalWeeks = parseInt(localStorage.getItem('kas_x5_max_weeks_v3')) || 1;
-    let selectedWeek = parseInt(localStorage.getItem('kas_x5_selected_week_v3')) || 1;
+    let paymentHistory = JSON.parse(localStorage.getItem('kas_x5_nominal_v1')) || { 1: {} };
+    let totalWeeks = parseInt(localStorage.getItem('kas_x5_max_weeks_v1')) || 1;
+    let selectedWeek = parseInt(localStorage.getItem('kas_x5_selected_week_v1')) || 1;
 
     function saveStorage() {
-        localStorage.setItem('kas_x5_history_v3', JSON.stringify(paymentHistory));
-        localStorage.setItem('kas_x5_max_weeks_v3', totalWeeks);
-        localStorage.setItem('kas_x5_selected_week_v3', selectedWeek);
+        localStorage.setItem('kas_x5_nominal_v1', JSON.stringify(paymentHistory));
+        localStorage.setItem('kas_x5_max_weeks_v1', totalWeeks);
+        localStorage.setItem('kas_x5_selected_week_v1', selectedWeek);
     }
 
     function renderWeekDropdown() {
@@ -413,23 +377,76 @@
         renderTable();
     }
 
-    function updateStatus(studentIdx, status) {
-        if (!paymentHistory[selectedWeek]) {
-            paymentHistory[selectedWeek] = {};
-        }
-        paymentHistory[selectedWeek][studentIdx] = status;
-        saveStorage();
-        renderTable();
-    }
-
     function calculateStudentTotal(studentIdx) {
         let total = 0;
         for (let w = 1; w <= totalWeeks; w++) {
-            if (paymentHistory[w] && paymentHistory[w][studentIdx] === 'Sudah bayar') {
-                total += TARIF_KAS;
+            if (paymentHistory[w] && paymentHistory[w][studentIdx]) {
+                total += paymentHistory[w][studentIdx];
             }
         }
         return total;
+    }
+
+    function updateNominalInput(studentIdx, val) {
+        if (!paymentHistory[selectedWeek]) {
+            paymentHistory[selectedWeek] = {};
+        }
+        const amount = parseInt(val) || 0;
+        paymentHistory[selectedWeek][studentIdx] = amount;
+        saveStorage();
+
+        const totalSiswa = calculateStudentTotal(studentIdx);
+        let statusBadge = '';
+        let totalDisplay = `Rp ${totalSiswa.toLocaleString('id-ID')}`;
+
+        if (amount === 0) {
+            statusBadge = '<span class="badge-status badge-kosong">BELUM BAYAR</span>';
+        } else if (amount < TARIF_STANDAR) {
+            statusBadge = '<span class="badge-status badge-kurang">KURANG</span>';
+        } else if (amount === TARIF_STANDAR) {
+            statusBadge = '<span class="badge-status badge-lunas">LUNAS</span>';
+        } else {
+            const selisih = amount - TARIF_STANDAR;
+            statusBadge = `<span class="badge-status badge-lebih">LEBIH (+${selisih.toLocaleString('id-ID')})</span>`;
+            totalDisplay += ` <span class="text-lebih-info">(+${selisih.toLocaleString('id-ID')})</span>`;
+        }
+
+        document.getElementById(`status-badge-${studentIdx}`).innerHTML = statusBadge;
+        document.getElementById(`total-siswa-${studentIdx}`).innerHTML = totalDisplay;
+
+        updateCalculationsOnly();
+    }
+
+    function updateCalculationsOnly() {
+        let countLunas = 0, countKurang = 0;
+        let totalMingguIni = 0;
+        let totalAkumulasiSemua = 0;
+
+        studentsData.forEach((_, idx) => {
+            totalAkumulasiSemua += calculateStudentTotal(idx);
+        });
+
+        const currentWeekData = paymentHistory[selectedWeek] || {};
+
+        studentsData.forEach((_, index) => {
+            const nominalAngka = currentWeekData[index] || 0;
+            totalMingguIni += nominalAngka;
+
+            if (nominalAngka < TARIF_STANDAR) {
+                countKurang++;
+            } else {
+                countLunas++;
+            }
+        });
+
+        document.getElementById('countLunas').innerText = countLunas;
+        document.getElementById('countKurang').innerText = countKurang;
+        document.getElementById('totalMingguIni').innerText = 'Rp ' + totalMingguIni.toLocaleString('id-ID');
+        document.getElementById('totalAkumulasi').innerText = 'Rp ' + totalAkumulasiSemua.toLocaleString('id-ID');
+        document.getElementById('footerTotalMinggu').innerText = 'Rp ' + totalMingguIni.toLocaleString('id-ID');
+        document.getElementById('footerTotalAkumulasi').innerText = 'Rp ' + totalAkumulasiSemua.toLocaleString('id-ID');
+
+        renderTunggakanTable(currentWeekData);
     }
 
     function renderTunggakanTable(currentWeekData) {
@@ -437,16 +454,21 @@
         const belumLunasList = [];
 
         studentsData.forEach((student, index) => {
-            const status = currentWeekData[index] || "Belum absen";
-            if (status !== 'Sudah bayar') {
-                belumLunasList.push({ index: index + 1, nama: student, status: status });
+            const bayar = currentWeekData[index] || 0;
+            if (bayar < TARIF_STANDAR) {
+                belumLunasList.push({ 
+                    index: index + 1, 
+                    nama: student, 
+                    bayar: bayar,
+                    kurang: TARIF_STANDAR - bayar
+                });
             }
         });
 
         if (belumLunasList.length === 0) {
             container.innerHTML = `
                 <div class="alert-success-box">
-                    🎉 AMAN! Semua siswa sudah melunasi uang kas untuk Minggu ke-${selectedWeek}.
+                    🎉 AMAN! Semua siswa sudah membayar minimal Rp 3.000 untuk Minggu ke-${selectedWeek}.
                 </div>
             `;
             return;
@@ -458,22 +480,21 @@
                     <thead>
                         <tr>
                             <th class="text-center" style="width: 50px;">No</th>
-                            <th>Nama Siswa (Belum Lunas / Belum Absen)</th>
-                            <th class="text-center" style="width: 140px;">Keterangan</th>
+                            <th>Nama Siswa (Belum Lunas / Kurang)</th>
+                            <th class="text-right" style="width: 140px;">Telah Dibayar</th>
+                            <th class="text-right" style="width: 140px;">Kurang</th>
                         </tr>
                     </thead>
                     <tbody>
         `;
 
         belumLunasList.forEach((item) => {
-            const badgeClass = item.status === 'Belum bayar' ? 'badge-belum-bayar' : 'badge-belum-absen';
             html += `
                 <tr>
                     <td class="text-center" style="color: #64748b; font-weight: 600;">${item.index}</td>
                     <td><strong style="color: #dc2626;">${item.nama}</strong></td>
-                    <td class="text-center">
-                        <span class="badge-status ${badgeClass}">${item.status.toUpperCase()}</span>
-                    </td>
+                    <td class="text-right" style="font-weight:700;">Rp ${item.bayar.toLocaleString('id-ID')}</td>
+                    <td class="text-right"><span style="color: #b91c1c; font-weight: 800;">- Rp ${item.kurang.toLocaleString('id-ID')}</span></td>
                 </tr>
             `;
         });
@@ -493,66 +514,43 @@
         const tbody = document.getElementById('studentTable');
         tbody.innerHTML = '';
 
-        let countSudah = 0, countBelum = 0, countAbsen = 0;
-        let totalMingguIni = 0;
-        let totalAkumulasiSemua = 0;
-
-        studentsData.forEach((_, idx) => {
-            totalAkumulasiSemua += calculateStudentTotal(idx);
-        });
-
         const currentWeekData = paymentHistory[selectedWeek] || {};
 
         studentsData.forEach((student, index) => {
-            const status = currentWeekData[index] || "Belum absen";
-            let bayarMingguIni = 0;
-
-            if (status === 'Sudah bayar') {
-                countSudah++;
-                bayarMingguIni = TARIF_KAS;
-            } else if (status === 'Belum bayar') {
-                countBelum++;
-            } else {
-                countAbsen++;
-            }
-
-            totalMingguIni += bayarMingguIni;
+            const bayarMingguIni = currentWeekData[index] !== undefined ? currentWeekData[index] : '';
+            const nominalAngka = parseInt(bayarMingguIni) || 0;
             const totalSiswa = calculateStudentTotal(index);
 
-            let statusClass = 'status-belum-absen';
-            if (status === 'Sudah bayar') statusClass = 'status-sudah-bayar';
-            if (status === 'Belum bayar') statusClass = 'status-belum-bayar';
+            let statusBadge = '';
+            let totalDisplay = `Rp ${totalSiswa.toLocaleString('id-ID')}`;
+
+            if (nominalAngka === 0) {
+                statusBadge = '<span class="badge-status badge-kosong">BELUM BAYAR</span>';
+            } else if (nominalAngka < TARIF_STANDAR) {
+                statusBadge = '<span class="badge-status badge-kurang">KURANG</span>';
+            } else if (nominalAngka === TARIF_STANDAR) {
+                statusBadge = '<span class="badge-status badge-lunas">LUNAS</span>';
+            } else {
+                const selisih = nominalAngka - TARIF_STANDAR;
+                statusBadge = `<span class="badge-status badge-lebih">LEBIH (+${selisih.toLocaleString('id-ID')})</span>`;
+                totalDisplay += ` <span class="text-lebih-info">(+${selisih.toLocaleString('id-ID')})</span>`;
+            }
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="text-center" style="color: #64748b; font-weight: 600;">${index + 1}</td>
                 <td><strong style="color: #1e293b; font-size: 13px;">${student}</strong></td>
                 <td class="text-center">
-                    <select class="status-select ${statusClass}" onchange="updateStatus(${index}, this.value)">
-                        <option value="Belum absen" ${status === 'Belum absen' ? 'selected' : ''}>Belum absen</option>
-                        <option value="Sudah bayar" ${status === 'Sudah bayar' ? 'selected' : ''}>Sudah bayar</option>
-                        <option value="Belum bayar" ${status === 'Belum bayar' ? 'selected' : ''}>Belum bayar</option>
-                    </select>
+                    <input type="number" class="input-nominal" placeholder="0" value="${bayarMingguIni}" 
+                        oninput="updateNominalInput(${index}, this.value)">
                 </td>
-                <td class="text-right"><span style="font-weight: 700; color: ${bayarMingguIni > 0 ? '#16a34a' : '#64748b'};">Rp ${bayarMingguIni.toLocaleString('id-ID')}</span></td>
-                <td class="text-right"><strong style="color: #2563eb;">Rp ${totalSiswa.toLocaleString('id-ID')}</strong></td>
+                <td class="text-center" id="status-badge-${index}">${statusBadge}</td>
+                <td class="text-right"><strong id="total-siswa-${index}" style="color: #2563eb;">${totalDisplay}</strong></td>
             `;
             tbody.appendChild(tr);
         });
 
-        // Update Summary Cards
-        document.getElementById('countSudah').innerText = countSudah;
-        document.getElementById('countBelum').innerText = countBelum;
-        document.getElementById('countAbsen').innerText = countAbsen;
-        document.getElementById('totalMingguIni').innerText = 'Rp ' + totalMingguIni.toLocaleString('id-ID');
-        document.getElementById('totalAkumulasi').innerText = 'Rp ' + totalAkumulasiSemua.toLocaleString('id-ID');
-        
-        // Update Table Footers
-        document.getElementById('footerTotalMinggu').innerText = 'Rp ' + totalMingguIni.toLocaleString('id-ID');
-        document.getElementById('footerTotalAkumulasi').innerText = 'Rp ' + totalAkumulasiSemua.toLocaleString('id-ID');
-
-        // Render khusus tabel penagihan/tunggakan
-        renderTunggakanTable(currentWeekData);
+        updateCalculationsOnly();
     }
 
     renderTable();
