@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uang Kas X.5</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --border: #e2e8f0;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --warning: #d97706;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 16px 8px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            color: #1e3a8a;
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .bendahara-tag {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .week-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .select-week {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-weight: 700;
+            font-size: 14px;
+            background: white;
+            color: var(--primary-dark);
+            cursor: pointer;
+            flex-grow: 1;
+        }
+
+        .btn-add-week {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-add-week:hover {
+            background-color: #1d4ed8;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        @media (min-width: 600px) {
+            .controls {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .summary-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+            .container {
+                padding: 24px;
+            }
+        }
+
+        .card {
+            background: #ffffff;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .card-title {
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .card-value {
+            font-size: 16px;
+            font-weight: 800;
+            margin-top: 2px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: #1e293b;
+            margin: 20px 0 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            background: white;
+            min-width: 600px;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: #334155;
+            font-weight: 700;
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        .status-select {
+            padding: 6px 4px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 12px;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+            outline: none;
+            width: 130px;
+            text-align: center;
+        }
+
+        .status-belum-absen {
+            background-color: #f1f5f9;
+            color: #475569;
+            border-color: #cbd5e1;
+        }
+
+        .status-sudah-bayar {
+            background-color: #dcfce7;
+            color: #15803d;
+            border-color: #86efac;
+        }
+
+        .status-belum-bayar {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border-color: #fca5a5;
+        }
+
+        .badge-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .badge-belum-bayar {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .badge-belum-absen {
+            background-color: #fef3c7;
+            color: #b45309;
+        }
+
+        .alert-success-box {
+            background-color: #dcfce7;
+            border: 1px solid #86efac;
+            color: #15803d;
+            padding: 14px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .total-row {
+            background-color: #f8fafc !important;
+            font-weight: 800;
+            font-size: 13px;
+        }
+
+        .total-row td {
+            border-top: 2px solid var(--border);
+            padding: 12px 8px;
+        }
+
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>UANG KAS X.5</h1>
+        <div class="subtitle">Tarif Uang Kas: Rp 3.000 / minggu</div>
+        <div class="bendahara-tag">Bendahara: Chika & Nazwa</div>
+    </header>
+
+    <div class="controls">
+        <div class="week-nav">
+            <span style="font-weight:600; color:#475569; font-size:13px;">Periode:</span>
+            <select id="weekSelect" class="select-week" onchange="switchWeek(this.value)">
+                <!-- Generated dynamically -->
+            </select>
+        </div>
+        <button class="btn-add-week" onclick="tambahMingguBaru()">
+            ➕ Tambah / Lanjut Minggu Baru
+        </button>
+    </div>
+
+    <div class="summary-grid">
+        <div class="card">
+            <div class="card-title">Sudah Bayar</div>
+            <div class="card-value" id="countSudah" style="color: var(--success)">0</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Belum Bayar</div>
+            <div class="card-value" id="countBelum" style="color: var(--danger)">0</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Belum Absen</div>
+            <div class="card-value" id="countAbsen" style="color: var(--warning)">0</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Kas Minggu Ini</div>
+            <div class="card-value" id="totalMingguIni" style="color: var(--primary-dark)">Rp 0</div>
+        </div>
+        <div class="card" style="grid-column: span 2; @media(min-width:600px){grid-column: span 1;}">
+            <div class="card-title">Total Akumulasi Seluruh Minggu</div>
+            <div class="card-value" id="totalAkumulasi" style="color: #047857">Rp 0</div>
+        </div>
+    </div>
+
+    <!-- TABEL 1: DAFTAR UNGKAP / TUNGGAKAN MINGGU INI -->
+    <div class="section-title">
+        <span>📋 Rekap Tunggakan <span id="labelMingguTunggakan">Minggu ini</span></span>
+    </div>
+    <div id="tunggakanContainer">
+        <!-- Generates table or success banner dynamically -->
+    </div>
+
+    <!-- TABEL 2: DATA LENGKAP UTAMA -->
+    <div class="section-title">
+        <span>📊 Data Seluruh Siswa</span>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th class="text-center" style="width: 40px;">No</th>
+                    <th style="min-width: 160px;">Nama Siswa</th>
+                    <th class="text-center" style="width: 140px;">Status Pembayaran</th>
+                    <th class="text-right" style="width: 120px;">Bayar Minggu Ini</th>
+                    <th class="text-right" style="width: 140px;">Total Terbayar (Siswa)</th>
+                </tr>
+            </thead>
+            <tbody id="studentTable"></tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="3" class="text-right">TOTAL KAS:</td>
+                    <td class="text-right" id="footerTotalMinggu" style="color: var(--primary-dark);">Rp 0</td>
+                    <td class="text-right" id="footerTotalAkumulasi" style="color: #047857;">Rp 0</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<script>
+    const studentsData = [
+        "ADIKIA DEVARA YASA", "AKAYLA PUTRI FELISHA", "ALMIRA SIFRA SIANTURI", 
+        "AQILLA ZARA LATHIFA", "ARFA KHUBAIRO", "CHIKA MULYA RAMADHANI", 
+        "DAFFA RAKHA MANGGALA", "DARA OKTAVIA", "DEVARA KAKKA PUTRA SETIAWAN", 
+        "FADLI RAFIANSYAH", "FAINA ABILA ANINDITA", "GAVRILA RASENDRIYA SHASIKIRANA", 
+        "IZZA GUSRIYADI", "IZZA SHAZIA HASANAH", "LATISYA SHERILL GRISELDA", 
+        "LULLA BADRIYA RAMADANI", "MUHAMAD ADIBATUL MAULA", "MUHAMMAD FADHIL JULIANSYAH", 
+        "MUHAMMAD KHALIFI ADH-DHUHA", "MUTIARA AZZAHRA", "NAZWA KHOERUNNISA", 
+        "NIZAR AULIA DWINANDA", "NOKEU FUJI AGUSTIN", "PRISCILLA AURELIA NABABAN", 
+        "RAQILLA ZALFA ALMAHESA", "RAZITA HALWA IRDINA", "SYAMIL ZAIDAN NAZHIF", 
+        "TAZKIA GHASSANI SHALIHAH", "TEGAR RAMADHAN", "VIANKA AHALYA SABRINA", 
+        "ZANETTA DWI FAUZIYAH", "ZHIAN ARYAN PRAMANA"
+    ];
+
+    const TARIF_KAS = 3000;
+
+    let paymentHistory = JSON.parse(localStorage.getItem('kas_x5_history_v3')) || { 1: {} };
+    let totalWeeks = parseInt(localStorage.getItem('kas_x5_max_weeks_v3')) || 1;
+    let selectedWeek = parseInt(localStorage.getItem('kas_x5_selected_week_v3')) || 1;
+
+    function saveStorage() {
+        localStorage.setItem('kas_x5_history_v3', JSON.stringify(paymentHistory));
+        localStorage.setItem('kas_x5_max_weeks_v3', totalWeeks);
+        localStorage.setItem('kas_x5_selected_week_v3', selectedWeek);
+    }
+
+    function renderWeekDropdown() {
+        const select = document.getElementById('weekSelect');
+        select.innerHTML = '';
+        for (let w = 1; w <= totalWeeks; w++) {
+            const opt = document.createElement('option');
+            opt.value = w;
+            opt.innerText = `Minggu ke-${w}`;
+            if (w === selectedWeek) opt.selected = true;
+            select.appendChild(opt);
+        }
+        document.getElementById('labelMingguTunggakan').innerText = `(Minggu ke-${selectedWeek})`;
+    }
+
+    function switchWeek(weekNum) {
+        selectedWeek = parseInt(weekNum);
+        saveStorage();
+        renderTable();
+    }
+
+    function tambahMingguBaru() {
+        totalWeeks += 1;
+        selectedWeek = totalWeeks;
+        if (!paymentHistory[totalWeeks]) {
+            paymentHistory[totalWeeks] = {};
+        }
+        saveStorage();
+        renderWeekDropdown();
+        renderTable();
+    }
+
+    function updateStatus(studentIdx, status) {
+        if (!paymentHistory[selectedWeek]) {
+            paymentHistory[selectedWeek] = {};
+        }
+        paymentHistory[selectedWeek][studentIdx] = status;
+        saveStorage();
+        renderTable();
+    }
+
+    function calculateStudentTotal(studentIdx) {
+        let total = 0;
+        for (let w = 1; w <= totalWeeks; w++) {
+            if (paymentHistory[w] && paymentHistory[w][studentIdx] === 'Sudah bayar') {
+                total += TARIF_KAS;
+            }
+        }
+        return total;
+    }
+
+    function renderTunggakanTable(currentWeekData) {
+        const container = document.getElementById('tunggakanContainer');
+        const belumLunasList = [];
+
+        studentsData.forEach((student, index) => {
+            const status = currentWeekData[index] || "Belum absen";
+            if (status !== 'Sudah bayar') {
+                belumLunasList.push({ index: index + 1, nama: student, status: status });
+            }
+        });
+
+        if (belumLunasList.length === 0) {
+            container.innerHTML = `
+                <div class="alert-success-box">
+                    🎉 AMAN! Semua siswa sudah melunasi uang kas untuk Minggu ke-${selectedWeek}.
+                </div>
+            `;
+            return;
+        }
+
+        let html = `
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width: 50px;">No</th>
+                            <th>Nama Siswa (Belum Lunas / Belum Absen)</th>
+                            <th class="text-center" style="width: 140px;">Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        belumLunasList.forEach((item) => {
+            const badgeClass = item.status === 'Belum bayar' ? 'badge-belum-bayar' : 'badge-belum-absen';
+            html += `
+                <tr>
+                    <td class="text-center" style="color: #64748b; font-weight: 600;">${item.index}</td>
+                    <td><strong style="color: #dc2626;">${item.nama}</strong></td>
+                    <td class="text-center">
+                        <span class="badge-status ${badgeClass}">${item.status.toUpperCase()}</span>
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        container.innerHTML = html;
+    }
+
+    function renderTable() {
+        renderWeekDropdown();
+
+        const tbody = document.getElementById('studentTable');
+        tbody.innerHTML = '';
+
+        let countSudah = 0, countBelum = 0, countAbsen = 0;
+        let totalMingguIni = 0;
+        let totalAkumulasiSemua = 0;
+
+        studentsData.forEach((_, idx) => {
+            totalAkumulasiSemua += calculateStudentTotal(idx);
+        });
+
+        const currentWeekData = paymentHistory[selectedWeek] || {};
+
+        studentsData.forEach((student, index) => {
+            const status = currentWeekData[index] || "Belum absen";
+            let bayarMingguIni = 0;
+
+            if (status === 'Sudah bayar') {
+                countSudah++;
+                bayarMingguIni = TARIF_KAS;
+            } else if (status === 'Belum bayar') {
+                countBelum++;
+            } else {
+                countAbsen++;
+            }
+
+            totalMingguIni += bayarMingguIni;
+            const totalSiswa = calculateStudentTotal(index);
+
+            let statusClass = 'status-belum-absen';
+            if (status === 'Sudah bayar') statusClass = 'status-sudah-bayar';
+            if (status === 'Belum bayar') statusClass = 'status-belum-bayar';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="text-center" style="color: #64748b; font-weight: 600;">${index + 1}</td>
+                <td><strong style="color: #1e293b; font-size: 13px;">${student}</strong></td>
+                <td class="text-center">
+                    <select class="status-select ${statusClass}" onchange="updateStatus(${index}, this.value)">
+                        <option value="Belum absen" ${status === 'Belum absen' ? 'selected' : ''}>Belum absen</option>
+                        <option value="Sudah bayar" ${status === 'Sudah bayar' ? 'selected' : ''}>Sudah bayar</option>
+                        <option value="Belum bayar" ${status === 'Belum bayar' ? 'selected' : ''}>Belum bayar</option>
+                    </select>
+                </td>
+                <td class="text-right"><span style="font-weight: 700; color: ${bayarMingguIni > 0 ? '#16a34a' : '#64748b'};">Rp ${bayarMingguIni.toLocaleString('id-ID')}</span></td>
+                <td class="text-right"><strong style="color: #2563eb;">Rp ${totalSiswa.toLocaleString('id-ID')}</strong></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Update Summary Cards
+        document.getElementById('countSudah').innerText = countSudah;
+        document.getElementById('countBelum').innerText = countBelum;
+        document.getElementById('countAbsen').innerText = countAbsen;
+        document.getElementById('totalMingguIni').innerText = 'Rp ' + totalMingguIni.toLocaleString('id-ID');
+        document.getElementById('totalAkumulasi').innerText = 'Rp ' + totalAkumulasiSemua.toLocaleString('id-ID');
+        
+        // Update Table Footers
+        document.getElementById('footerTotalMinggu').innerText = 'Rp ' + totalMingguIni.toLocaleString('id-ID');
+        document.getElementById('footerTotalAkumulasi').innerText = 'Rp ' + totalAkumulasiSemua.toLocaleString('id-ID');
+
+        // Render khusus tabel penagihan/tunggakan
+        renderTunggakanTable(currentWeekData);
+    }
+
+    renderTable();
+</script>
+
+</body>
+</html>
